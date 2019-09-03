@@ -4,16 +4,20 @@
 import socket
 import threading
 import os
+import urllib.parse
 
-web_root_path = ".\\wwwroot"  # 指定一个用于存放所有网页文件的路径，即所谓的Web服务器根目录
+web_root_path = "./wwwroot"  # 指定一个用于存放所有网页文件的路径，即所谓的Web服务器根目录
 
 def web_serve(sock_conn):
     req = sock_conn.recv(1024)
     req = req.decode()
     print(req)
 
-    path = req.split("\r\n")[0].split(" ")[1]
-
+    path_args = req.split("\r\n")[0].split(" ")[1]
+    path_args = urllib.parse.unquote(path_args)  # URL解码
+    path_args = path_args.split("?")
+    path = path_args[0]
+ 
     if path == "/":
         file_path = os.path.join(web_root_path, "index.html")
         path = "/index.html"
