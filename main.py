@@ -32,6 +32,8 @@ def web_serve(sock_conn):
         content_type = "image/jpeg"
     elif file_ext.lower() in ("png", ):
         content_type = "image/png"
+    elif file_ext.lower() in ("gif", ):
+        content_type = "image/gif"
     elif file_ext.lower() in ("html", "htm"):
         content_type = "text/html; charset=UTF-8"
     elif file_ext.lower() in ("js", ):
@@ -59,9 +61,8 @@ def web_serve(sock_conn):
 
 
 sock_listen = socket.socket(type=socket.SOCK_STREAM)
-
+sock_listen.setsockopt(socket.SOL_SOCKET, socket.SO_REUSEADDR, 1);
 sock_listen.bind(("0.0.0.0", 9999))
-
 sock_listen.listen(5)
 
 while True:
