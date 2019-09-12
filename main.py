@@ -5,23 +5,40 @@ import socket
 import threading
 import os
 import urllib.parse
+import qrcode
+from io import BytesIO
 
 web_root_path = "./wwwroot"  # 指定一个用于存放所有网页文件的路径，即所谓的Web服务器根目录
 
 def web_serve(sock_conn):
     req = sock_conn.recv(1024)
     req = req.decode()
-    print(req)
+    # print(req)
 
     path_args = req.split("\r\n")[0].split(" ")[1]
-    path_args = urllib.parse.unquote(path_args)  # URL解码
-    path_args = path_args.split("?")
+    path_args = urllib.parse.unquote(path_args).split("?")  # URL解码
     path = path_args[0]
+    
+    args = None
+    if len(path_args) == 2:
+        args = path_args[1]
  
     if path == "/":
         file_path = os.path.join(web_root_path, "index.html")
         path = "/index.html"
     else:
+        if path == "/qrcode":
+            text = args.split("=")[1]
+            qr_img = qrcode.make(text)
+            buff = BytesIO()
+            qr_img.save(buff, "png")
+
+            content_type = "image/png"
+            rsp = "HTTP/1.1 200 Ok\r\nContent-Type: %s\r\nConnection: Close\r\nServer: dj server\r\n\r\n" % content_type
+            sock_conn.send(rsp.encode() + buff.getvalue())
+            sock_conn.close()
+            return
+           
         file_path = os.path.join(web_root_path, path[1:])
     
     file_ext = path.split("/")[-1].split(".")[-1]
